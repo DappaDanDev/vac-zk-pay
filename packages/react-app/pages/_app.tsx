@@ -1,9 +1,8 @@
-import { Alfajores, Celo } from "@celo/rainbowkit-celo/chains";
-import celoGroups from "@celo/rainbowkit-celo/lists";
-import { RainbowKitProvider } from "@rainbow-me/rainbowkit";
+// import celoGroups from "@celo/rainbowkit-celo/lists";
+import { RainbowKitProvider, getDefaultConfig } from "@rainbow-me/rainbowkit";
 import "@rainbow-me/rainbowkit/styles.css";
 import type { AppProps } from "next/app";
-import { WagmiConfig, configureChains, createConfig } from "wagmi";
+import { WagmiProvider  } from "wagmi";
 import { publicProvider } from "wagmi/providers/public";
 import Layout from "../components/Layout";
 import "../styles/globals.css";
@@ -12,35 +11,58 @@ import { Noir } from '@noir-lang/noir_js';
 import noir_circuit from '../../circuit/target/ciruit.json';
 import React, { useEffect, useState } from 'react';
 import { ethers } from 'ethers';
-import abi from '../contractABI.json'
-
-
-const contractABI = abi 
+import { wagmiContractConfig } from 'wagmiConfig'
+import { CustomLogicContractConfig } from "./CustomLogicContractConfig";
+import {
+  celoAlfajores
+} from 'wagmi/chains'
+import { createPublicClient, http, createWalletClient, toHex, toBytes, createClient} from 'viem'
+import { Alfajores, Celo } from "@celo/rainbowkit-celo/chains";
+import { jsonRpcProvider } from "wagmi/providers/jsonRpc";
+import { CeloWallet, Valora } from "@celo/rainbowkit-celo/wallets";
+import {
+  walletConnectWallet,
+} from "@rainbow-me/rainbowkit/wallets";
 
 const contractAddress = '0x73dc2D545091aC4C6605030B68E7b8fa2Fa65000';
 
-
+console.log(celoAlfajores);
 const projectId = process.env.NEXT_PUBLIC_WC_PROJECT_ID as string; // get one at https://cloud.walletconnect.com/app
 
-const { chains, publicClient } = configureChains(
-  [Celo, Alfajores],
-  [publicProvider()]
-);
 
-const connectors = celoGroups({
-  chains,
-  projectId,
-  appName: (typeof document === "object" && document.title) || "Your App Name",
-});
+// const { chains, provider } = configureChains(
+//   [Alfajores, Celo],
+//   [
+//     jsonRpcProvider({
+//       rpc: (chain) => ({ http: chain.rpcUrls.default.http[0] }),
+//     }),
+//   ]
+// );
+
+// const connectors = connectorsForWallets([
+//   {
+//     groupName: "Recommended with CELO",
+//     wallets: [
+//       Valora({ chains }),
+//       CeloWallet({ chains }),
+//       walletConnectWallet({ chains }),
+//     ],
+//   },
+// ]);
+
+// const wagmiClient = createClient({
+//   autoConnect: true,
+//   connectors,
+//   provider,
+
+// });
+
+
+
 
 const appInfo = {
   appName: "Celo Composer",
 };
-
-const wagmiConfig = createConfig({
-  connectors,
-  publicClient: publicClient,
-});
 
 function App({ Component, pageProps }: AppProps) {
   const [logs, setLogs] = useState<string[]>([]);
@@ -62,8 +84,37 @@ function App({ Component, pageProps }: AppProps) {
     setLogs((logs) => [...logs, 'Verifying proof... ⌛']);
     const verification = await noir.verifyFinalProof(proof);
 
+
     if (verification) {
       setLogs((logs) => [...logs, 'Verifying proof... ✅']);
+
+      // const provider = new ethers.providers.JsonRpcProvider('https://alfajores-forno.celo-testnet.org');
+
+      const client = createPublicClient({ 
+        chain: celoAlfajores, 
+        transport: http("https://alfajores-forno.celo-testnet.org	") 
+      })
+
+      const [account] = await window.ethereum.request({ method: 'eth_requestAccounts' }) 
+
+      const { proof } = await noir.generateFinalProof(input);
+      const publicInputs = toHex(inputY);
+
+      const walletClient = createWalletClient({
+        account, 
+        chain: celoAlfajores,
+        transport: http()
+      })
+
+
+      // await walletClient.writeContract({
+      //   ...CustomLogicContractConfig,
+      //   functionName: 'sendProof',
+      //   args: [proof, publicInputs],
+      // });
+      
+
+
     }
   };
 
@@ -71,7 +122,7 @@ function App({ Component, pageProps }: AppProps) {
 
 
   return (
-    <WagmiConfig config={wagmiConfig}>
+    <WagmiConfig config={config}>
       <RainbowKitProvider chains={chains} appInfo={appInfo} coolMode={true}>
         <Layout>
           <Component {...pageProps} />
