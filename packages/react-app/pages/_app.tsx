@@ -1,8 +1,8 @@
-// import celoGroups from "@celo/rainbowkit-celo/lists";
-import { RainbowKitProvider, getDefaultConfig } from "@rainbow-me/rainbowkit";
+import celoGroups from "@celo/rainbowkit-celo/lists";
+import { RainbowKitProvider } from "@rainbow-me/rainbowkit";
 import "@rainbow-me/rainbowkit/styles.css";
 import type { AppProps } from "next/app";
-import { WagmiProvider  } from "wagmi";
+import { WagmiConfig, configureChains, createConfig  } from "wagmi";
 import { publicProvider } from "wagmi/providers/public";
 import Layout from "../components/Layout";
 import "../styles/globals.css";
@@ -16,7 +16,7 @@ import { CustomLogicContractConfig } from "./CustomLogicContractConfig";
 import {
   celoAlfajores
 } from 'wagmi/chains'
-import { createPublicClient, http, createWalletClient, toHex, toBytes, createClient} from 'viem'
+import { createPublicClient, http, createWalletClient, toHex, parseAbi, bytesToHex, numberToHex} from 'viem'
 import { Alfajores, Celo } from "@celo/rainbowkit-celo/chains";
 import { jsonRpcProvider } from "wagmi/providers/jsonRpc";
 import { CeloWallet, Valora } from "@celo/rainbowkit-celo/wallets";
@@ -29,35 +29,26 @@ const contractAddress = '0x73dc2D545091aC4C6605030B68E7b8fa2Fa65000';
 console.log(celoAlfajores);
 const projectId = process.env.NEXT_PUBLIC_WC_PROJECT_ID as string; // get one at https://cloud.walletconnect.com/app
 
+const { chains, publicClient } = configureChains(
+  [Celo, Alfajores],
+  [
+      jsonRpcProvider({
+          rpc: (chain) => ({ http: chain.rpcUrls.default.http[0] }),
+      }),
+  ]
+);
 
-// const { chains, provider } = configureChains(
-//   [Alfajores, Celo],
-//   [
-//     jsonRpcProvider({
-//       rpc: (chain) => ({ http: chain.rpcUrls.default.http[0] }),
-//     }),
-//   ]
-// );
+const connectors = celoGroups({
+  chains,
+  projectId,
+  appName: (typeof document === "object" && document.title) || "Sample App",
+});
 
-// const connectors = connectorsForWallets([
-//   {
-//     groupName: "Recommended with CELO",
-//     wallets: [
-//       Valora({ chains }),
-//       CeloWallet({ chains }),
-//       walletConnectWallet({ chains }),
-//     ],
-//   },
-// ]);
-
-// const wagmiClient = createClient({
-//   autoConnect: true,
-//   connectors,
-//   provider,
-
-// });
-
-
+const config = createConfig({
+  autoConnect: true,
+  connectors,
+  publicClient: publicClient,
+});
 
 
 const appInfo = {
@@ -98,21 +89,24 @@ function App({ Component, pageProps }: AppProps) {
       const [account] = await window.ethereum.request({ method: 'eth_requestAccounts' }) 
 
       const { proof } = await noir.generateFinalProof(input);
-      const publicInputs = toHex(inputY);
-
+      let publicInputs = inputX
       const walletClient = createWalletClient({
         account, 
         chain: celoAlfajores,
         transport: http()
       })
 
+      console.log(walletClient);
+
+      console.log(numberToHex(publicInputs, { size: 32 }));
+
 
       // await walletClient.writeContract({
-      //   ...CustomLogicContractConfig,
+      //   address: '0x73dc2D545091aC4C6605030B68E7b8fa2Fa65000',
+      //   abi: parseAbi(['function sendProof(bytes calldata _proof, bytes32[] calldata _publicInputs) public']),
       //   functionName: 'sendProof',
-      //   args: [proof, publicInputs],
+      //   args: [bytesToHex(proof), numberToHex(publicInputs, { size: 32 }[]],
       // });
-      
 
 
     }
