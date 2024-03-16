@@ -11,7 +11,13 @@ import { BarretenbergBackend } from '@noir-lang/backend_barretenberg';
 import { Noir } from '@noir-lang/noir_js';
 import noir_circuit from '../../circuit/target/ciruit.json';
 import React, { useEffect, useState } from 'react';
+import { ethers } from 'ethers';
+import abi from '../contractABI.json'
 
+
+const contractABI = abi 
+
+const contractAddress = '0x73dc2D545091aC4C6605030B68E7b8fa2Fa65000';
 
 
 const projectId = process.env.NEXT_PUBLIC_WC_PROJECT_ID as string; // get one at https://cloud.walletconnect.com/app
