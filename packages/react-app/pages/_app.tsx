@@ -24,7 +24,24 @@ import {
   walletConnectWallet,
 } from "@rainbow-me/rainbowkit/wallets";
 
+const contractAbi = [
+  'function sendProof(bytes calldata _proof, bytes32[] calldata _publicInputs) public'
+];
+
 const contractAddress = '0x73dc2D545091aC4C6605030B68E7b8fa2Fa65000';
+
+
+let provider, signer;
+
+if (typeof window !== 'undefined') {
+  provider = new ethers.providers.Web3Provider(window.ethereum);
+  signer = provider.getSigner();
+}
+
+
+
+const contract = new ethers.Contract(contractAddress, contractAbi, signer);
+
 
 console.log(celoAlfajores);
 const projectId = process.env.NEXT_PUBLIC_WC_PROJECT_ID as string; // get one at https://cloud.walletconnect.com/app
@@ -61,6 +78,11 @@ function App({ Component, pageProps }: AppProps) {
   const [inputX, setInputX] = useState(0);
   const [inputY, setInputY] = useState(0);
 
+
+
+
+
+
   const handleGenerateProof = async () => {
     const backend = new BarretenbergBackend(noir_circuit as any);
     const noir = new Noir(noir_circuit as any, backend);
@@ -76,8 +98,34 @@ function App({ Component, pageProps }: AppProps) {
     const verification = await noir.verifyFinalProof(proof);
 
 
+
     if (verification) {
-      setLogs((logs) => [...logs, 'Verifying proof... ✅']);
+
+
+
+
+
+      const interactWithContract = async (account: string) => {
+        // Create a provider
+        const provider = new ethers.providers.JsonRpcProvider('https://alfajores-forno.celo-testnet.org');
+    
+        // Create a signer
+        const signer = provider.getSigner(account);
+    
+        // Create a contract instance
+        const contract = new ethers.Contract(contractAddress, contractAbi, signer);
+    
+        // Define the proof and public inputs
+        const publicInputs = ['0x0000000000000000000000000000000000000000000000000000000000000002']; // Replace with your public inputs
+    
+        // Call the sendProof function
+
+        await contract.sendProof(proof, publicInputs);
+
+      };
+
+    
+  
 
       // const provider = new ethers.providers.JsonRpcProvider('https://alfajores-forno.celo-testnet.org');
 
@@ -86,27 +134,40 @@ function App({ Component, pageProps }: AppProps) {
         transport: http("https://alfajores-forno.celo-testnet.org	") 
       })
 
-      const [account] = await window.ethereum.request({ method: 'eth_requestAccounts' }) 
+      const [account] = await window.ethereum.request({ method: 'eth_requestAccounts' });
 
-      const { proof } = await noir.generateFinalProof(input);
-      let publicInputs = inputX
+      if (!account) {
+        console.error('No Ethereum account found');
+        return;
+      }
+      
+      let publicInputs = inputY
       const walletClient = createWalletClient({
         account, 
         chain: celoAlfajores,
-        transport: http()
+        transport: http("https://alfajores-forno.celo-testnet.org")
       })
 
-      console.log(walletClient);
+      console.log(account);
 
-      console.log(numberToHex(publicInputs, { size: 32 }));
-
+      console.log(numberToHex(publicInputs, { size: 32 }).toString());
 
       // await walletClient.writeContract({
+      //   account,
       //   address: '0x73dc2D545091aC4C6605030B68E7b8fa2Fa65000',
       //   abi: parseAbi(['function sendProof(bytes calldata _proof, bytes32[] calldata _publicInputs) public']),
       //   functionName: 'sendProof',
-      //   args: [bytesToHex(proof), numberToHex(publicInputs, { size: 32 }[]],
+      //   args: [bytesToHex(proof.proof), [numberToHex(publicInputs, { size: 32 }).toString()]],
       // });
+
+      //  await walletClient.writeContract({
+      //   account,
+      //   address: '0x73dc2D545091aC4C6605030B68E7b8fa2Fa65000',
+      //   abi: parseAbi(['function sendProof(bytes calldata _proof, bytes32[] calldata _publicInputs) public']),
+      //   functionName: 'sendProof',
+      //   args: [bytesToHex(proof.proof), ["0x0000000000000000000000000000000000000000000000000000000000000002"]],
+      // });
+
 
 
     }
@@ -121,8 +182,8 @@ function App({ Component, pageProps }: AppProps) {
         <Layout>
           <Component {...pageProps} />
           <div>
-      <input type="number" value={inputX} onChange={(e) => setInputX(e.target.value)} placeholder="Enter value for x" />
-      <input type="number" value={inputY} onChange={(e) => setInputY(e.target.value)} placeholder="Enter value for y" />
+      <input type="string" value={inputX} onChange={(e) => setInputX(e.target.value)} placeholder="Enter value for x" />
+      <input type="string" value={inputY} onChange={(e) => setInputY(e.target.value)} placeholder="Enter value for y" />
       <button onClick={handleGenerateProof}>Generate Proof</button>
       <div id="logs">
         {logs.map((log, index) => (
