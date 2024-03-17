@@ -40,8 +40,6 @@ if (typeof window !== 'undefined') {
   signer = provider.getSigner();
 }
 
-
-
 const contract = new ethers.Contract(contractAddress, contractAbi, signer);
 
 
@@ -78,30 +76,41 @@ function App({ Component, pageProps }: AppProps) {
   const [logs, setLogs] = useState<string[]>([]);
   const [results, setResults] = useState<Uint8Array | null>(null);
   const [inputX, setInputX] = useState(0);
-  const [inputY, setInputY] = useState('');
+  const [inputY, setInputY] = useState(0);
 
   
 
 
 
-
+  console.log(inputY); 
 
 
   const handleGenerateProof = async () => {
     const backend = new BarretenbergBackend(noir_circuit as any);
     const noir = new Noir(noir_circuit as any, backend);
-    const input = { x: inputX, y: inputY };
+    const input = { x: 12345687, y: inputY };
 
-    setLogs((logs) => [...logs, 'Verifiying Your Code ... ⌛']);
-    const proof = await noir.generateFinalProof(input);
+    try {
+      setLogs((logs) => [...logs, 'Verifying Your Code ... ⌛']);
+      const proof = await noir.generateFinalProof(input);
 
-    setLogs((logs) => [...logs, 'Code Vefiied, Donation Sent   🎉']);
-    setResults(proof.proof);
+      setLogs((logs) => [...logs, 'Code Vefrifed, Donation Sent   🎉']);
+      setResults(proof.proof);
 
-    console.log(bytesToHex(proof.proof));
+      console.log(bytesToHex(proof.proof));
+
+      const verification = await noir.verifyFinalProof(proof);
+
+
+
+    } catch (error) {
+      setLogs((logs) => [...logs, 'Sorry, Wrong Code']);
+    }
+
+  
+
 
     // setLogs((logs) => [...logs, 'Verifying proof... ⌛']);
-    const verification = await noir.verifyFinalProof(proof);
 
 
 
@@ -188,12 +197,13 @@ function App({ Component, pageProps }: AppProps) {
         <Layout>
           <Component {...pageProps} />
           <div class="flex flex-col items-center justify-center">
-            
+  
+  <h1 class="text-4xl sm:text-5xl lg:text-6xl leading-none font-extrabold text-gray-900 tracking-tight mb-8">From ZK with love</h1>
+
   <p class="mb-4 text-xl text-center">Congrats, somebody in the world supports you!</p>
   <p class="mb-4 text-l">Enter Your Unique Donation Code Below</p>
 
   <div class="container mx-auto px-4 sm:px-6 lg:px-8">
-  <h1 class="text-4xl sm:text-5xl lg:text-6xl leading-none font-extrabold text-gray-900 tracking-tight mb-8">From ZK with love</h1>
   <input type="string" value={inputY} onChange={(e) => setInputY(e.target.value)} placeholder="Enter 8 digit donation code" class="mb-4 rounded border-[3px] border-blue-500 w-full sm:w-3/4 lg:w-1/2" />
   <button class="bg-green-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full w-full sm:w-auto" onClick={handleGenerateProof}>Get Your Donation</button>
 </div>
