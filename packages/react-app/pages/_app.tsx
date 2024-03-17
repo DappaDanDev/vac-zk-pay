@@ -71,14 +71,16 @@ const config = createConfig({
 
 
 const appInfo = {
-  appName: "Celo Composer",
+  appName: "From ZK With Love",
 };
 
 function App({ Component, pageProps }: AppProps) {
   const [logs, setLogs] = useState<string[]>([]);
   const [results, setResults] = useState<Uint8Array | null>(null);
   const [inputX, setInputX] = useState(0);
-  const [inputY, setInputY] = useState(0);
+  const [inputY, setInputY] = useState('');
+
+  
 
 
 
@@ -90,45 +92,45 @@ function App({ Component, pageProps }: AppProps) {
     const noir = new Noir(noir_circuit as any, backend);
     const input = { x: inputX, y: inputY };
 
-    setLogs((logs) => [...logs, 'Generating proof... ⌛']);
+    setLogs((logs) => [...logs, 'Verifiying Your Code ... ⌛']);
     const proof = await noir.generateFinalProof(input);
 
-    setLogs((logs) => [...logs, 'Generating proof... ✅']);
+    setLogs((logs) => [...logs, 'Code Vefiied, Donation Sent   🎉']);
     setResults(proof.proof);
 
     console.log(bytesToHex(proof.proof));
 
-    setLogs((logs) => [...logs, 'Verifying proof... ⌛']);
+    // setLogs((logs) => [...logs, 'Verifying proof... ⌛']);
     const verification = await noir.verifyFinalProof(proof);
 
 
 
-    if (verification) {
-      (async () => {
-        const account = '0x22Ddfd8a9C1AeC4AD5C2763F29c7C92f65cFbA1b'; // Replace with your account address
-  
-        // Create a provider
-        const provider = new ethers.providers.JsonRpcProvider('https://alfajores-forno.celo-testnet.org');
-  
-        // Create a signer
-        const signer = provider.getSigner(account);
-  
-        // Create a contract instance
-        const contract = new ethers.Contract(contractAddress, contractAbi, signer);
-  
-        // Define the proof and public inputs
-        const publicInputs = ['0x0000000000000000000000000000000000000000000000000000000000000002']; // Replace with your public inputs
-  
-        // Call the sendProof function
-        const transactionResponse = await contract.sendProof(bytesToHex(proof.proof), publicInputs, {
-          gasLimit: ethers.utils.hexlify(1000000), // Replace 1000000 with your estimated gas limit
-        });
-  
-        console.log(transactionResponse);
-      })();
-    }
 
-    
+    // if (verification) {
+    //   (async () => {
+    //     const account = '0x22Ddfd8a9C1AeC4AD5C2763F29c7C92f65cFbA1b'; // Replace with your account address
+  
+    //     // Create a provider
+    //     const provider = new ethers.providers.JsonRpcProvider('https://alfajores-forno.celo-testnet.org');
+  
+    //     // Create a signer
+    //     const signer = provider.getSigner(account);
+  
+    //     // Create a contract instance
+    //     const contract = new ethers.Contract(contractAddress, contractAbi, signer);
+  
+    //     // Define the proof and public inputs
+    //     const publicInputs = ['0x0000000000000000000000000000000000000000000000000000000000000002']; // Replace with your public inputs
+  
+    //     // Call the sendProof function
+    //     const transactionResponse = await contract.sendProof(bytesToHex(proof.proof), publicInputs, {
+    //       gasLimit: ethers.utils.hexlify(1000000), // Replace 1000000 with your estimated gas limit
+    //     });
+  
+    //     console.log(transactionResponse);
+    //   })();
+    // }
+
   
 
       // const provider = new ethers.providers.JsonRpcProvider('https://alfajores-forno.celo-testnet.org');
@@ -185,22 +187,35 @@ function App({ Component, pageProps }: AppProps) {
       <RainbowKitProvider chains={chains} appInfo={appInfo} coolMode={true}>
         <Layout>
           <Component {...pageProps} />
-          <div>
-      <input type="string" value={inputX} onChange={(e) => setInputX(e.target.value)} placeholder="Enter value for x" />
-      <input type="string" value={inputY} onChange={(e) => setInputY(e.target.value)} placeholder="Enter value for y" />
-      <button onClick={handleGenerateProof}>Generate Proof</button>
-      <div id="logs">
-        {logs.map((log, index) => (
-          <p key={index}>{log}</p>
-        ))}
-      </div>
-      <div id="results">
-        <p>{results}</p>
-      </div>
-    </div>
+          <div class="flex flex-col items-center justify-center">
+            
+  <p class="mb-4 text-xl text-center">Congrats, somebody in the world supports you!</p>
+  <p class="mb-4 text-l">Enter Your Unique Donation Code Below</p>
+
+  <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+  <h1 class="text-4xl sm:text-5xl lg:text-6xl leading-none font-extrabold text-gray-900 tracking-tight mb-8">From ZK with love</h1>
+  <input type="string" value={inputY} onChange={(e) => setInputY(e.target.value)} placeholder="Enter 8 digit donation code" class="mb-4 rounded border-[3px] border-blue-500 w-full sm:w-3/4 lg:w-1/2" />
+  <button class="bg-green-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full w-full sm:w-auto" onClick={handleGenerateProof}>Get Your Donation</button>
+</div>
+
+
+
+</div>
+<div id="logs">
+  {logs.map((log, index) => (
+    <p key={index}>{log}</p>
+  ))}
+</div>
+{/* <div id="results">
+  <p>{results}</p>
+</div> */}
         </Layout>
       </RainbowKitProvider>
     </WagmiConfig>
+
+    
+
+
   );
 }
 
