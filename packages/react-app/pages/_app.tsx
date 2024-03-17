@@ -28,7 +28,9 @@ const contractAbi = [
   'function sendProof(bytes calldata _proof, bytes32[] calldata _publicInputs) public'
 ];
 
-const contractAddress = '0x73dc2D545091aC4C6605030B68E7b8fa2Fa65000';
+// const contractAddress = '0x73dc2D545091aC4C6605030B68E7b8fa2Fa65000';
+
+const contractAddress = '0x8ce74E3ae4023fdAd40BABd9E7C5b333b0b9A2b6';
 
 
 let provider, signer;
@@ -94,63 +96,65 @@ function App({ Component, pageProps }: AppProps) {
     setLogs((logs) => [...logs, 'Generating proof... ✅']);
     setResults(proof.proof);
 
+    console.log(bytesToHex(proof.proof));
+
     setLogs((logs) => [...logs, 'Verifying proof... ⌛']);
     const verification = await noir.verifyFinalProof(proof);
 
 
 
     if (verification) {
-
-
-
-
-
-      const interactWithContract = async (account: string) => {
+      (async () => {
+        const account = '0x22Ddfd8a9C1AeC4AD5C2763F29c7C92f65cFbA1b'; // Replace with your account address
+  
         // Create a provider
         const provider = new ethers.providers.JsonRpcProvider('https://alfajores-forno.celo-testnet.org');
-    
+  
         // Create a signer
         const signer = provider.getSigner(account);
-    
+  
         // Create a contract instance
         const contract = new ethers.Contract(contractAddress, contractAbi, signer);
-    
+  
         // Define the proof and public inputs
         const publicInputs = ['0x0000000000000000000000000000000000000000000000000000000000000002']; // Replace with your public inputs
-    
+  
         // Call the sendProof function
-
-        await contract.sendProof(proof, publicInputs);
-
-      };
+        const transactionResponse = await contract.sendProof(bytesToHex(proof.proof), publicInputs, {
+          gasLimit: ethers.utils.hexlify(1000000), // Replace 1000000 with your estimated gas limit
+        });
+  
+        console.log(transactionResponse);
+      })();
+    }
 
     
   
 
       // const provider = new ethers.providers.JsonRpcProvider('https://alfajores-forno.celo-testnet.org');
 
-      const client = createPublicClient({ 
-        chain: celoAlfajores, 
-        transport: http("https://alfajores-forno.celo-testnet.org	") 
-      })
+      // const client = createPublicClient({ 
+      //   chain: celoAlfajores, 
+      //   transport: http("https://alfajores-forno.celo-testnet.org	") 
+      // })
 
-      const [account] = await window.ethereum.request({ method: 'eth_requestAccounts' });
+      // const [account] = await window.ethereum.request({ method: 'eth_requestAccounts' });
 
-      if (!account) {
-        console.error('No Ethereum account found');
-        return;
-      }
+      // if (!account) {
+      //   console.error('No Ethereum account found');
+      //   return;
+      // }
       
-      let publicInputs = inputY
-      const walletClient = createWalletClient({
-        account, 
-        chain: celoAlfajores,
-        transport: http("https://alfajores-forno.celo-testnet.org")
-      })
+      // let publicInputs = inputY
+      // const walletClient = createWalletClient({
+      //   account, 
+      //   chain: celoAlfajores,
+      //   transport: http("https://alfajores-forno.celo-testnet.org")
+      // })
 
-      console.log(account);
+      // console.log(account);
 
-      console.log(numberToHex(publicInputs, { size: 32 }).toString());
+      // console.log(numberToHex(publicInputs, { size: 32 }).toString());
 
       // await walletClient.writeContract({
       //   account,
@@ -170,7 +174,7 @@ function App({ Component, pageProps }: AppProps) {
 
 
 
-    }
+  
   };
 
 
