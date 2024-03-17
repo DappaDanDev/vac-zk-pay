@@ -23,6 +23,9 @@ import { CeloWallet, Valora } from "@celo/rainbowkit-celo/wallets";
 import {
   walletConnectWallet,
 } from "@rainbow-me/rainbowkit/wallets";
+import Image from 'next/image'
+import logo from './logo.png'
+
 
 const contractAbi = [
   'function sendProof(bytes calldata _proof, bytes32[] calldata _publicInputs) public'
@@ -192,25 +195,31 @@ function App({ Component, pageProps }: AppProps) {
 
 
   return (
+    <div className="bg-custom-blue text-custom-text">
+
     <WagmiConfig config={config}>
       <RainbowKitProvider chains={chains} appInfo={appInfo} coolMode={true}>
         <Layout>
           <Component {...pageProps} />
           <div class="flex flex-col items-center justify-center">
-  
-  <h1 class="text-4xl sm:text-5xl lg:text-6xl leading-none font-extrabold text-gray-900 tracking-tight mb-8">From ZK with love</h1>
+        
+  <div className="flex flex-col items-center justify-center">
+  <Image src={logo} alt="Description" width={500} height={300} class="mx-auto block"/>
+  <h1 class="text-4xl sm:text-5xl lg:text-6xl leading-none font-extrabold tracking-tight mb-8">From ZK with love</h1>
+  {/* rest of your code */}
+</div>
 
   <p class="mb-4 text-xl text-center">Congrats, somebody in the world supports you!</p>
   <p class="mb-4 text-l">Enter Your Unique Donation Code Below</p>
 
   <div class="container mx-auto px-4 sm:px-6 lg:px-8">
-  <input type="string" value={inputY} onChange={(e) => setInputY(e.target.value)} placeholder="Enter 8 digit donation code" class="mb-4 rounded border-[3px] border-blue-500 w-full sm:w-3/4 lg:w-1/2" />
+  <input type="string" value={inputY} onChange={(e) => setInputY(e.target.value)} placeholder="Enter 8 digit donation code" class="mb-4 rounded border-[3px] border-blue-500 w-full sm:w-3/4 lg:w-1/2 text-black" />
   <button class="bg-green-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full w-full sm:w-auto" onClick={handleGenerateProof}>Get Your Donation</button>
 </div>
-
-
-
 </div>
+
+
+
 <div id="logs">
   {logs.map((log, index) => (
     <p key={index}>{log}</p>
@@ -224,7 +233,7 @@ function App({ Component, pageProps }: AppProps) {
     </WagmiConfig>
 
     
-
+</div>
 
   );
 }

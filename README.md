@@ -10,7 +10,7 @@ By [�UN](https://www.un.org/sg/en/content/sg/statement/2012-07-09/secretary-ge
 ## How Does it Work? 
 
 
-[![Figure 1](https://app.eraser.io/workspace/Fx4YkLyL24s45BqPBj8v/preview?elements=c9buDWZEosqJytG8Er86mA&type=embed)](https://app.eraser.io/workspace/Fx4YkLyL24s45BqPBj8v?elements=c9buDWZEosqJytG8Er86mA)
+[![Figure 1](figure-1.png)]
 
 **Step 1: **
 
